@@ -3,30 +3,30 @@ $filter="deviceid='e:'"
 $cap_path="E:\Packet_Project_1"
 $log_path=@("E:\log_dns","E:\log_http_extend","E:\log_http_apache")
 
-$log_fils="d:\" + "$(Get-Date -Format 'yyyy-MM-dd HH£ºmm').txt"
+$log_fils="d:\" + "$(Get-Date -Format 'yyyy-MM-dd HHï¼šmm').txt"
 $Totle_size = 0
 
 
-#½¨Á¢¹éµµÄ¿Â¼
+#å»ºç«‹å½’æ¡£ç›®å½•
 $Archive_Dir = 'e:\Archive\'+((get-date).AddDays(-1).ToString('yyyy-MM-dd')+'\') 
 $log_path | %{
 mkdir ($_ -replace 'e:\\', $Archive_Dir)
 }
 
-#¸´ÖÆÇ°Ò»ÌìµÄÈÕÖ¾µ½¹éµµÄ¿Â¼
+#å¤åˆ¶å‰ä¸€å¤©çš„æ—¥å¿—åˆ°å½’æ¡£ç›®å½•
 Get-ChildItem -File $log_path | ?{ $_.LastWriteTime.ToString('yyyy-MM-dd')  -eq (Get-Date).AddDays(-1).ToString('yyyy-MM-dd') } | %{
 Move-Item $_.FullName -Destination ($_.FullName -replace 'e:\\',$Archive_Dir)
 }
 
-#´ÅÅÌÊ£Óà°Ù·Ö±È
+#ç£ç›˜å‰©ä½™ç™¾åˆ†æ¯”
 $disk_free_space=get-wmiobject win32_logicaldisk -filter $filter | % { $_.freespace/$_.Size }
 if ( $disk_free_space -gt 0.06 ) 
 {
-        ac -Path $log_fils -Value "Ê£Óà¿Õ¼ä´óÓÚ6%£¬²»Ö´ÐÐÉ¾³ý"
+        ac -Path $log_fils -Value "å‰©ä½™ç©ºé—´å¤§äºŽ6%ï¼Œä¸æ‰§è¡Œåˆ é™¤"
 }
 else
 {
-     #É¾³ý×îÔçµÄ3ÌìÎÄ¼þ
+     #åˆ é™¤æœ€æ—©çš„3å¤©æ–‡ä»¶
      $oldest_day=Get-ChildItem $cap_path -File -Recurse | Measure-Object -Property LastWriteTime -Minimum | %{date($_.Minimum) -Format 'yyyy-MM-dd'}
      Get-ChildItem $cap_path -File |  where-object { $_.LastWriteTime -lt ($oldest_day | Get-Date).AddDays(3) } | %{
          #get-item $line
@@ -34,13 +34,13 @@ else
          $Totle_size += $_.Length
          del $_.FullName
      }
-     ac -Path $log_fils -Value ("¹²É¾³ýÎÄ¼þ£º" + ($Totle_size/1024mb) + "Gb")
+     ac -Path $log_fils -Value ("å…±åˆ é™¤æ–‡ä»¶ï¼š" + ($Totle_size/1024mb) + "Gb")
      $Totle_size = 0
-     #É¾³ý3¸öÔÂÇ°µÄÈÕÖ¾
+     #åˆ é™¤3ä¸ªæœˆå‰çš„æ—¥å¿—
      Get-ChildItem 'e:\Archive\' | ?{ $_.BaseName -lt (get-date).AddMonths(-3).ToString('yyyy-MM-dd') } | %{
-         $Totle_size+=Get-ChildItem $_.FullName -File -Recurse | Measure-Object -Property Length -Sum
+         $Totle_size+=Get-ChildItem $_.FullName -File -Recurse | Measure-Object -Property Length -Sum | %{$_.sum}
          ac -Path $log_fils -Value ("deleting ->" + $_.FullName)
          del $_.FullName -Recurse
      }
-     ac -Path $log_fils -Value ("¹²É¾³ýÎÄ¼þ£º" + ($Totle_size/1024mb) + "Gb")
+     ac -Path $log_fils -Value ("å…±åˆ é™¤æ–‡ä»¶ï¼š" + ($Totle_size/1024mb) + "Gb")
 }
